@@ -38,7 +38,7 @@ jobs:
         INDEX: ${{ secrets.EF_INDEX }}
       run: |
         mkdir keys
-        echo {"field":$FIELD,"key":$KEY,"index":$INDEX} > keys/expired_filter.keys.json
+        echo {field: $FIELD, key: $KEY, index: $INDEX} > keys/expired_filter.keys.json
     - name: Test Run 
       run: |
         python3 src/Expired_Filter/Expired_Filter.py
