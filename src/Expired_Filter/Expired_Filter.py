@@ -124,7 +124,8 @@ class Expired_Filter():
         else:        
             if resp.status_code == 200:
                 content = BeautifulSoup(resp.content, "html.parser")            
-                words_set = self.convert_to_set(content)                
+                words_set = self.convert_to_set(content)         
+                       
                 if "indeed.com" in str(url):
                     indeed_checks = ["this job has expired"]
                     indeed_search = ["This job has expired"]                
@@ -135,6 +136,7 @@ class Expired_Filter():
                             if results:
                                 return indeed_search[i]                    
                     self.proc_print('Indeed.com Parsing: Took ' + str(time.time()-last_time)+' seconds')
+                    return None
 
                 elif content.body:
                     body_checks = ["this job filled", "the job you are looking for is no longer open", "this job posting has expired"]
