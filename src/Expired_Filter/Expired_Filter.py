@@ -15,7 +15,7 @@ import Path_Manager as pm
 import Workbook_Writer as ww
 
 class Expired_Filter():
-    def __init__(self, num_processes = 0):
+    def __init__(self, num_processes = 0, num_jobs=0):
         # desktop user-agent
         self.USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 
@@ -38,6 +38,8 @@ class Expired_Filter():
         if num_processes != 0:
             self.num_processes = num_processes
         self.proc_print('# of processes to run: ' + str(self.num_processes))
+
+        self.num_jobs = num_jobs
 
         self.proc_print('Starting Timer for Expired Scraper')
         self.last_time = time.time()
@@ -168,7 +170,9 @@ class Expired_Filter():
         if not self.i_hits:
             self.proc_print('There are no hits to filter. Please run Get Live Jobs first')
             return
-
+        if self.num_jobs != 0:
+            self.proc_print('Only doing up to ' + str(self.num_jobs) + ' jobs')
+            self.i_hits = self.i_hits[:self.num_jobs]
         self.last_time = time.time()        
         self.proc_print("Using " + str(self.num_processes) + " processes")
         p = multiprocessing.Pool(self.num_processes)
@@ -207,8 +211,9 @@ class Expired_Filter():
 if __name__ == "__main__":   
     parser = argparse.ArgumentParser(description="Just a job scraping script")
     parser.add_argument('-np', "--num_processes", type=int, default=0 , help="number of processes to use") 
+    parser.add_argument('-nj', "--num_jobs", type=int, default=0 , help="number of jobs to filter") 
     args = parser.parse_args()
 
-    ef = Expired_Filter(num_processes=args.num_processes)
+    ef = Expired_Filter(num_processes=args.num_processes, num_jobs = args.num_jobs)
     ef.full_run()
     pass
