@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Workbook_Writer.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}\\src\\Expired_Filter\\Workbook_Writer.py",
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Path_Manager.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}\\src\\Expired_Filter\\Path_Manager.py",
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Expired_Filter.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}\\src\\Expired_Filter\\Expired_Filter.py",
+            "console": "externalTerminal"
+        }
+    ]
+}
