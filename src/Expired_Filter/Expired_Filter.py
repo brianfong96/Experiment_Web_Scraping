@@ -1,13 +1,13 @@
 from algoliasearch.search_client import SearchClient
 from bs4 import BeautifulSoup
 import datetime
-import json
 import multiprocessing 
 import os
 import re
 import requests
 import time 
 import urllib
+import yaml
 
 # Custom Imports
 import Path_Manager as pm
@@ -74,7 +74,8 @@ class Expired_Filter():
 
     def fill_hits(self, criteria_function = None):
         key_file = self.pm.get_path_to(os.path.join('keys','expired_filter.keys.json'))
-        key_data = json.load(open(key_file))
+        with open(key_file) as file:
+            key_data = yaml.load(file, Loader=yaml.BaseLoader)
         client = SearchClient.create(key_data['field'], key_data['key'])
         index = client.init_index(key_data['index'])
 
