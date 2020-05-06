@@ -41,7 +41,7 @@ jobs:
         echo {field: $FIELD, key: $KEY, index: $INDEX} > keys/expired_filter.keys.json
     - name: Test Run 
       run: |
-        python3 src/Expired_Filter/Expired_Filter.py
+        python3 src/Expired_Filter/Expired_Filter.py -np 8
     - name: Upload results
       uses: actions/upload-artifact@v1
       with:

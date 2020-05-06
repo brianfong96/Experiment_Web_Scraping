@@ -1,4 +1,5 @@
 from algoliasearch.search_client import SearchClient
+import argparse
 from bs4 import BeautifulSoup
 import datetime
 import multiprocessing 
@@ -14,7 +15,7 @@ import Path_Manager as pm
 import Workbook_Writer as ww
 
 class Expired_Filter():
-    def __init__(self):
+    def __init__(self, num_processes = 0):
         # desktop user-agent
         self.USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 
@@ -33,8 +34,9 @@ class Expired_Filter():
 
         self.pm = pm.Path_Manager()
         self.disable_print = False        
-
         self.num_processes = multiprocessing.cpu_count()
+        if num_processes != 0:
+            self.num_processes = num_processes
         self.proc_print('# of processes to run: ' + str(self.num_processes))
 
         self.proc_print('Starting Timer for Expired Scraper')
@@ -202,7 +204,11 @@ class Expired_Filter():
         self.write_to_ww()
         return
 
-if __name__ == "__main__":
-    ef = Expired_Filter()
+if __name__ == "__main__":   
+    parser = argparse.ArgumentParser(description="Just a job scraping script")
+    parser.add_argument('-np', "--num_processes", type=int, default=0 , help="number of processes to use") 
+    args = parser.parse_args()
+
+    ef = Expired_Filter(num_processes=args.num_processes)
     ef.full_run()
     pass
