@@ -1,4 +1,4 @@
-requests==2.20.1
+requests==2.21
 XlsxWriter==1.2.8
 algoliasearch==2.2.0
 xlrd==1.2.0
