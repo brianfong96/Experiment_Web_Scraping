@@ -32,16 +32,18 @@ class Expired_Filter():
         self.init_tmp_file()
 
         self.pm = pm.Path_Manager()
+        self.disable_print = False        
 
         self.num_processes = multiprocessing.cpu_count()
-        print('# of processes to run: ' + str(self.num_processes))
+        self.proc_print('# of processes to run: ' + str(self.num_processes))
 
-        print('Starting Timer for Expired Scraper')
+        self.proc_print('Starting Timer for Expired Scraper')
         self.last_time = time.time()
         return
 
     def proc_print(self, msg):
-        print(str(os.getpid())+':\t'+str(msg))
+        if not self.disable_print:
+            print(str(os.getpid())+':\t'+str(msg))
         return
 
     def print_unfiltered_jobs(self):
@@ -53,7 +55,7 @@ class Expired_Filter():
         split = string_sentence.split(' ')
         for s in split:
             if not s in set_of_words:
-                in_set = False
+                return False
         return in_set
 
     def convert_to_set(self, soup):
@@ -98,11 +100,108 @@ class Expired_Filter():
         return
 
     def filter_job(self, hit_tuple):
+        hit = hit_tuple[1]
+        err = self.parse_job(hit)
+        if err:
+            with open(self.tmp_file, 'a') as f:
+                f.write(str(hit_tuple[0])+'\t'+err+'\n')
+        return
 
+    def parse_job(self, hit):
+        last_time = time.time()
+        url = hit['externalURL']
+        title = hit['title']        
+        try: 
+            resp = requests.get(url, headers=self.headers)
+        except requests.exceptions.SSLError:
+            self.proc_print("This URL failed: " + url)
+            pass    
+        else:        
+            if resp.status_code == 200:
+                content = BeautifulSoup(resp.content, "html.parser")            
+                words_set = self.convert_to_set(content)                
+                if "indeed.com" in str(url):
+                    indeed_checks = ["this job has expired"]
+                    indeed_search = ["This job has expired"]                
+
+                    for i in range(len(indeed_checks)):                        
+                        if self.check_full_sentence_in_set(indeed_checks[i], words_set):
+                            results = content.find_all(string=re.compile('.*{0}.*'.format(indeed_search[i])), recursive=True)
+                            if results:
+                                return indeed_search[i]                    
+                    self.proc_print('Indeed.com Parsing: Took ' + str(time.time()-last_time)+' seconds')
+
+                elif content.body:
+                    body_checks = ["this job filled", "the job you are looking for is no longer open", "this job posting has expired"]
+                    pass_check = False
+                    for check in body_checks:
+                        if self.check_full_sentence_in_set(check, words_set):
+                            pass_check = True
+                    if not pass_check:
+                        self.proc_print("Stopped early because failed all checks. Took " + str(time.time()-last_time) + " seconds")
+                        return None
+                    title = title
+                    results = content.find_all(string=re.compile('.*{0}.*'.format(re.escape(title))), recursive=True)
+                    if results:                        
+                        body_search = ["This job has been filled", "The job you are looking for is no longer open", "This job posting has expired"]
+                        
+                        for i in range(len(body_checks)):
+                            if self.check_full_sentence_in_set(body_checks[i], words_set):
+                                results = content.find_all(string=re.compile('.*{0}.*'.format(body_search[i])), recursive=True)
+                                if results:
+                                    return body_search[i]                    
+                        self.proc_print('Content Body Parsing: Took ' + str(time.time()-last_time)+' seconds')                    
+                    else:
+                        return "no title found"                        
+                else:
+                    return "no content.body found"
+            else:
+                return str("Status Code: " + str(resp.status_code))
+
+        self.proc_print('Finished Function: stopped after ' + str(time.time()-last_time)+' seconds')
+        return None
+
+    def multiprocess_filter(self):
+        if not self.i_hits:
+            self.proc_print('There are no hits to filter. Please run Get Live Jobs first')
+            return
+
+        self.last_time = time.time()        
+        self.proc_print("Using " + str(self.num_processes) + " processes")
+        p = multiprocessing.Pool(self.num_processes)
+        p.map(self.filter_job, self.i_hits)
+        
+        time_took = time.time()-self.last_time
+        self.proc_print("Took "  + str(time_took) + " seconds to concurrent job search")
+        return
+
+    def write_to_ww(self):
+        self.last_time = time.time()
+        self.hit_err = list()        
+        self.column_names = ['URL', 'Title', 'Company', 'Date Posted', 'Result']
+        self.ww = ww.Workbook_Writer('ExpiredJobs.xlsx', self.column_names)
+
+        row_values = list()
+        with open(self.tmp_file, 'r') as f:
+            for line in f:
+                if line != '\n':
+                    line = line.split('\t')
+                    i = int(line[0])
+                    hit = self.i_hits[i][1]
+                    err = line[1]
+                    row_values.append([hit['externalURL'], hit['title'], hit['companyName'], hit['createdAt'][:-14], err])
+        self.ww.Write(row_values)
+        self.ww.End()
+        self.proc_print("Writing to Excell took " + str(time.time()-self.last_time) +" seconds")
+        return
+
+    def full_run(self):
+        self.get_live_jobs()
+        self.multiprocess_filter()
+        self.write_to_ww()
         return
 
 if __name__ == "__main__":
     ef = Expired_Filter()
-    ef.get_live_jobs()
-    
+    ef.full_run()
     pass
