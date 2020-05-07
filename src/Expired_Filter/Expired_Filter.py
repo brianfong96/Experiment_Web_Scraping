@@ -212,8 +212,8 @@ class Expired_Filter():
 
 if __name__ == "__main__":   
     parser = argparse.ArgumentParser(description="Just a job scraping script")
-    parser.add_argument('-np', "--num_processes", type=int, default=0 , help="number of processes to use") 
-    parser.add_argument('-nj', "--num_jobs", type=int, default=0 , help="number of jobs to filter") 
+    parser.add_argument('-p', "--num_processes", type=int, default=0 , help="number of processes to use") 
+    parser.add_argument('-j', "--num_jobs", type=int, default=0 , help="number of jobs to filter") 
     args = parser.parse_args()
 
     ef = Expired_Filter(num_processes=args.num_processes, num_jobs = args.num_jobs)

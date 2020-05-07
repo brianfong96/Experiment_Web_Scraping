@@ -27,13 +27,13 @@
             "console": "externalTerminal"
         },
         {
-            "name": "Expired_Filter.py 10 jobs",
+            "name": "Expired_Filter.py limited jobs",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}\\src\\Expired_Filter\\Expired_Filter.py",
             "console": "externalTerminal",
             "args": [
-                "-nj 10"
+                "-j 12"
             ]
         }
     ]

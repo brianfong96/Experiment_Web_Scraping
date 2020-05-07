@@ -41,7 +41,7 @@ jobs:
         echo {field: $FIELD, key: $KEY, index: $INDEX} > keys/expired_filter.keys.yml
     - name: Test Run 
       run: |
-        python3 src/Expired_Filter/Expired_Filter.py -np 2 -nj 10
+        python3 src/Expired_Filter/Expired_Filter.py -p 2 -j 10
     - name: Upload results
       uses: actions/upload-artifact@v1
       with:
