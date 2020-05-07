@@ -6,28 +6,30 @@ class Workbook_Writer():
         self.workbook = xlsxwriter.Workbook(workbook_name) 
         self.worksheet = self.workbook.add_worksheet()
         self.bold = self.workbook.add_format({'bold': True})        
-        self.Write_Row(1, column_names, True)
-        
+        self.row_index = 1
+        self.Write_Row(column_names, is_bold=True)        
 
-    def Write_Row(self, row_index, row_values, is_bold=False):
+    def Write_Row(self, row_values, is_bold=False, row_index=None):
         self.base = ord('A')
-        row_index = str(row_index)
+        ri = str(self.row_index)
+        if row_index:
+            ri = str(row_index)
+        else:
+            self.row_index += 1
         col = 0
         for val in row_values:
             if is_bold:
-                self.worksheet.write(chr(self.base+col)+row_index, val, self.bold)
+                self.worksheet.write(chr(self.base+col)+ri, val, self.bold)
             else:
-                self.worksheet.write(chr(self.base+col)+row_index, val)
+                self.worksheet.write(chr(self.base+col)+ri, val)
             col += 1
     
     def Write(self, row_values):
         '''
         row_vales = list of list, where each interior list is a list of values for a row
         '''
-        row_index = 2
         for row in row_values:
-            self.Write_Row(row_index, row)
-            row_index += 1
+            self.Write_Row(row)
 
     def End(self):
         self.workbook.close()

@@ -77,7 +77,7 @@ class Expired_Filter():
         return      
 
     def fill_hits(self, criteria_function = None):
-        key_file = self.pm.get_path_to(os.path.join('keys','expired_filter.keys.json'))
+        key_file = self.pm.get_path_to(os.path.join('keys','expired_filter.keys.yml'))
         with open(key_file) as file:
             key_data = yaml.load(file, Loader=yaml.BaseLoader)
         client = SearchClient.create(key_data['field'], key_data['key'])

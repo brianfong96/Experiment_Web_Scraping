@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Workbook_Writer.py",
             "type": "python",
@@ -24,6 +25,16 @@
             "request": "launch",
             "program": "${workspaceFolder}\\src\\Expired_Filter\\Expired_Filter.py",
             "console": "externalTerminal"
+        },
+        {
+            "name": "Expired_Filter.py 10 jobs",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}\\src\\Expired_Filter\\Expired_Filter.py",
+            "console": "externalTerminal",
+            "args": [
+                "-nj 10"
+            ]
         }
     ]
 }
