@@ -127,43 +127,84 @@ class Expired_Filter():
                 words_set = self.convert_to_set(content)         
                        
                 if "indeed.com" in str(url):
-                    indeed_checks = ["this job has expired"]
-                    indeed_search = ["This job has expired"]                
-
-                    for i in range(len(indeed_checks)):                        
-                        if self.check_full_sentence_in_set(indeed_checks[i], words_set):
-                            results = content.find_all(string=re.compile('.*{0}.*'.format(indeed_search[i])), recursive=True)
-                            if results:
-                                return indeed_search[i]                    
+                    search = "this job has expired".lower()
+                    if content.find("h3", class_="icl-Alert-headline"):
+                        return search
+                    else: 
+                        pass                
                     self.proc_print('Indeed.com Parsing: Took ' + str(time.time()-last_time)+' seconds')
                     return None
+                if "workdayjobs" in str(url):
+                    pass
 
-                elif content.body:
-                    body_checks = ["this job filled", "the job you are looking for is no longer open", "this job posting has expired"]
-                    pass_check = False
-                    for check in body_checks:
-                        if self.check_full_sentence_in_set(check, words_set):
-                            pass_check = True
-                    if not pass_check:
-                        self.proc_print("Stopped early because failed all checks. Took " + str(time.time()-last_time) + " seconds")
-                        return None
-                    title = title
-                    results = content.find_all(string=re.compile('.*{0}.*'.format(re.escape(title))), recursive=True)
-                    if results:                        
-                        body_search = ["This job has been filled", "The job you are looking for is no longer open", "This job posting has expired"]
-                        
-                        for i in range(len(body_checks)):
-                            if self.check_full_sentence_in_set(body_checks[i], words_set):
-                                results = content.find_all(string=re.compile('.*{0}.*'.format(body_search[i])), recursive=True)
-                                if results:
-                                    return body_search[i]                    
-                        self.proc_print('Content Body Parsing: Took ' + str(time.time()-last_time)+' seconds')                    
+                elif content:
+                    #screen if title is in all content 
+                    page = str(content).lower()
+                    #clean title
+                    title = title.lower()
+                    replacelist = [",", "&", "(", ")", "-", "–"]
+                    for character in replacelist:
+                        title = title.replace(character, " ")
+                    title = title.split()
+                    found = True
+                    for word in title:
+                        if word not in page:
+                            found = False
+
+                    if found:
+                        #screen for certain phrases in page text in case of expiration message overlay
+                        pagetext = content.get_text()
+                        phrases = [
+                            "this job is no longer accepting applications", 
+                            "this job has been filled", 
+                            "the job you are looking for is no longer open", 
+                            "this job posting has expired"
+                            ]
+                        for search in phrases:
+                            if search in pagetext:
+                                return search         
+
                     else:
-                        return "no title found"                        
+                        #screen with selenium
+                        driver = cd.CreateDriver(extra_arguments= ["--headless"])
+                        driver.get(url)
+                        time.sleep(2)
+
+                        #check for greenhouse api stored as iframe on page
+                        try:
+                            driver.switch_to.frame(driver.find_element_by_id("grnhse_iframe"))
+                            data = driver.page_source
+
+                        except selenium.common.exceptions.NoSuchElementException:
+                            data = driver.page_source
+                        else:
+                            data = driver.page_source
+                        driver.quit()
+
+                        #check for title in selenium results
+                        soup = BeautifulSoup(data, "html.parser")
+                        selpage = str(soup).lower()
+                        selfound = True
+                        for word in title:
+                            if word not in selpage:
+                                selfound = False
+                        if selfound:
+                            pass
+
+                        else:
+                            search = "no title found"
+                            return search
+
                 else:
-                    return "no content.body found"
+                    search = "no content found"
+                    return search
+
             else:
-                return str("Status Code: " + str(resp.status_code))
+                if "angel.co" in str(url):
+                    pass
+                else:
+                    search = ("Status Code: " + str(resp.status_code))
+                    return search
 
         self.proc_print('Finished Function: stopped after ' + str(time.time()-last_time)+' seconds')
         return None
