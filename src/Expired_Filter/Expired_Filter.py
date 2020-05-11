@@ -13,6 +13,7 @@ import yaml
 # Custom Imports
 import Path_Manager as pm
 import Workbook_Writer as ww
+import ChromeDriver as cd
 
 class Expired_Filter():
     def __init__(self, num_processes = 0, num_jobs=0):
@@ -118,7 +119,7 @@ class Expired_Filter():
         title = hit['title']        
         try: 
             resp = requests.get(url, headers=self.headers)
-        except requests.exceptions.SSLError:
+        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError):
             self.proc_print("This URL failed: " + url)
             pass    
         else:        
@@ -174,8 +175,7 @@ class Expired_Filter():
                         try:
                             driver.switch_to.frame(driver.find_element_by_id("grnhse_iframe"))
                             data = driver.page_source
-
-                        except selenium.common.exceptions.NoSuchElementException:
+                        except:
                             data = driver.page_source
                         else:
                             data = driver.page_source
